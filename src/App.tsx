@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import { AppLayout } from "./components/layout/AppLayout";
 import { FileTree } from "./components/sidebar/FileTree";
 import { MarkdownEditor } from "./components/editor/MarkdownEditor";
+import { MarkdownPreview } from "./components/preview/MarkdownPreview";
 import { useFileSystem } from "./hooks/useFileSystem";
 import "./App.css";
 
@@ -25,7 +26,7 @@ function App() {
         />
       }
       editor={<MarkdownEditor onCursorChange={handleCursorChange} />}
-      preview={<div style={{ padding: 12 }}>프리뷰 (구현 예정)</div>}
+      preview={<MarkdownPreview />}
       cursorLine={cursorLine}
       cursorCol={cursorCol}
     />
