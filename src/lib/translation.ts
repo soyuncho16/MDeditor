@@ -82,6 +82,7 @@ export async function translateWithOllama(
       system: systemPrompt,
       prompt: text,
       stream: false,
+      keep_alive: 0,
     }),
     signal: onAbort,
   });
