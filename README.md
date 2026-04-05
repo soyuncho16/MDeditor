@@ -9,7 +9,22 @@
 - 영어/중국어 → 한국어 번역 (Ollama + gemma3:4b)
 - 한국어/영어 UI
 
-## 실행
+## 설치 (Linux)
+
+[Releases](https://github.com/soyuncho16/MDeditor/releases)에서 `MDeditor_x.x.x_amd64.AppImage`와 `install.sh`를 같은 폴더에 다운로드한 후:
+
+```bash
+bash install.sh
+```
+
+설치 후 앱 런처에서 "MDeditor"를 검색하거나, `.md` 파일을 더블클릭하여 열 수 있습니다.
+
+제거:
+```bash
+bash uninstall.sh
+```
+
+## 개발 모드
 
 ```bash
 # 의존성 설치
@@ -18,8 +33,6 @@ npm install
 # 개발 모드 (핫 리로드, 코드 수정 시 자동 반영)
 npm run tauri dev
 ```
-
-개발 모드로 실행하면 MDeditor 데스크톱 창이 열립니다.
 
 ## 개발
 
