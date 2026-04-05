@@ -1,0 +1,57 @@
+{
+  "app": {
+    "title": "MDeditor",
+    "unsaved": "Unsaved"
+  },
+  "sidebar": {
+    "openFolder": "Open Folder",
+    "emptyFolder": "No files found",
+    "unsupportedFile": "Unsupported file type"
+  },
+  "editor": {
+    "placeholder": "Type markdown here..."
+  },
+  "dialog": {
+    "saveTitle": "Save Changes?",
+    "saveMessage": "You have unsaved changes.",
+    "save": "Save",
+    "dontSave": "Don't Save",
+    "cancel": "Cancel",
+    "reloadTitle": "File Changed",
+    "reloadMessage": "This file has been modified externally. Reload?",
+    "reload": "Reload",
+    "largeFileTitle": "Large File",
+    "largeFileMessage": "This file is over 1MB. Opening it may affect performance.",
+    "open": "Open",
+    "translateConfirmTitle": "Confirm Translation",
+    "translateConfirmMessage": "You have unsaved changes. Translation will replace current content. Continue?",
+    "continue": "Continue"
+  },
+  "statusBar": {
+    "line": "Ln",
+    "column": "Col"
+  },
+  "translation": {
+    "button": "Translate",
+    "translating": "Translating...",
+    "cancel": "Cancel",
+    "setupTitle": "Ollama Setup",
+    "notRunning": "Ollama is not running",
+    "installGuide": "Ollama is required for translation",
+    "installWindows": "Windows: winget install Ollama.Ollama or official installer",
+    "installLinux": "Linux: curl -fsSL https://ollama.com/install.sh | sh",
+    "modelInstall": "After installing, run the following command in terminal",
+    "modelCommand": "ollama pull gemma3:4b",
+    "modelNotFound": "Model gemma3:4b is not installed",
+    "testConnection": "Test Connection",
+    "connected": "Connected",
+    "disconnected": "Disconnected",
+    "selectModel": "Select Model",
+    "error": "An error occurred during translation",
+    "officialDocs": "Official Docs"
+  },
+  "language": {
+    "ko": "한국어",
+    "en": "English"
+  }
+}

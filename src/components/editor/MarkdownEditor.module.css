@@ -1,0 +1,14 @@
+.editor {
+  height: 100%;
+  overflow: auto;
+}
+
+.editor .cm-editor {
+  height: 100%;
+}
+
+.editor .cm-scroller {
+  font-family: "Fira Code", "Consolas", "Monaco", monospace;
+  font-size: 14px;
+  line-height: 1.6;
+}
