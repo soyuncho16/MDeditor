@@ -9,7 +9,15 @@
 - 영어/중국어 → 한국어 번역 (Ollama + gemma3:4b)
 - 한국어/영어 UI
 
-## 설치 (Linux)
+## 설치
+
+### Windows
+
+[Releases](https://github.com/soyuncho16/MDeditor/releases)에서 `MDeditor_x.x.x_x64-setup.exe`를 다운로드하고 실행하세요.
+
+설치 후 시작 메뉴에서 "MDeditor"를 검색하거나, `.md` 파일을 더블클릭하여 열 수 있습니다.
+
+### Linux
 
 [Releases](https://github.com/soyuncho16/MDeditor/releases)에서 `MDeditor_x.x.x_amd64.AppImage`와 `install.sh`를 같은 폴더에 다운로드한 후:
 
