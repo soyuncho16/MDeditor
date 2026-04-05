@@ -1,0 +1,125 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+      release_id: ${{ steps.create_release.outputs.id }}
+    steps:
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: MDeditor ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+
+  build-linux:
+    needs: create-release
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential curl wget file libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+
+      - run: npm ci
+      - run: npm test
+
+      - name: Build AppImage
+        run: npx tauri build --bundles appimage
+
+      - name: Upload AppImage to Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: src-tauri/target/release/bundle/appimage/MDeditor_2.0.0_amd64.AppImage
+          asset_name: MDeditor_${{ github.ref_name }}_amd64.AppImage
+          asset_content_type: application/octet-stream
+
+      - name: Upload install script to Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: scripts/install.sh
+          asset_name: install.sh
+          asset_content_type: application/x-shellscript
+
+      - name: Upload uninstall script to Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: scripts/uninstall.sh
+          asset_name: uninstall.sh
+          asset_content_type: application/x-shellscript
+
+  build-windows:
+    needs: create-release
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+
+      - run: npm ci
+
+      - name: Build NSIS
+        run: npx tauri build --bundles nsis
+
+      - name: Find installer
+        id: find_exe
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem -Path src-tauri/target/release/bundle/nsis -Filter "*.exe" | Select-Object -First 1
+          echo "EXE_PATH=$($exe.FullName)" >> $env:GITHUB_OUTPUT
+          echo "EXE_NAME=$($exe.Name)" >> $env:GITHUB_OUTPUT
+
+      - name: Upload Windows installer to Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: ${{ steps.find_exe.outputs.EXE_PATH }}
+          asset_name: MDeditor_${{ github.ref_name }}_x64-setup.exe
+          asset_content_type: application/octet-stream
