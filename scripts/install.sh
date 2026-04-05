@@ -55,7 +55,7 @@ cat > "$DESKTOP_DIR/mdeditor.desktop" << DESKTOP
 [Desktop Entry]
 Name=MDeditor
 Comment=로컬 마크다운 에디터
-Exec=$INSTALL_DIR/$APP_NAME %f
+Exec=$INSTALL_DIR/$APP_NAME --appimage-extract-and-run %f
 Icon=$ICON_DIR/mdeditor.png
 Terminal=false
 Type=Application
