@@ -9,21 +9,29 @@
 - 영어/중국어 → 한국어 번역 (Ollama + gemma3:4b)
 - 한국어/영어 UI
 
-## 개발
+## 실행
 
 ```bash
 # 의존성 설치
 npm install
 
-# 개발 서버
+# 개발 모드 (핫 리로드, 코드 수정 시 자동 반영)
 npm run tauri dev
+```
 
+개발 모드로 실행하면 MDeditor 데스크톱 창이 열립니다.
+
+## 개발
+
+```bash
 # 테스트
 npm test
 
-# 빌드
+# 프로덕션 빌드
 npm run tauri build
 ```
+
+빌드 결과물은 `src-tauri/target/release/bundle/`에 생성됩니다.
 
 ## 번역 기능
 
