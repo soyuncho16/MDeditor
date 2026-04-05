@@ -1,0 +1,57 @@
+{
+  "app": {
+    "title": "MDeditor",
+    "unsaved": "미저장"
+  },
+  "sidebar": {
+    "openFolder": "폴더 열기",
+    "emptyFolder": "파일이 없습니다",
+    "unsupportedFile": "지원하지 않는 파일 형식입니다"
+  },
+  "editor": {
+    "placeholder": "마크다운을 입력하세요..."
+  },
+  "dialog": {
+    "saveTitle": "저장하시겠습니까?",
+    "saveMessage": "저장하지 않은 변경 사항이 있습니다.",
+    "save": "저장",
+    "dontSave": "저장 안 함",
+    "cancel": "취소",
+    "reloadTitle": "파일이 변경되었습니다",
+    "reloadMessage": "파일이 외부에서 변경되었습니다. 다시 로드하시겠습니까?",
+    "reload": "다시 로드",
+    "largeFileTitle": "대용량 파일",
+    "largeFileMessage": "이 파일은 1MB 이상입니다. 열면 성능이 저하될 수 있습니다.",
+    "open": "열기",
+    "translateConfirmTitle": "번역 확인",
+    "translateConfirmMessage": "저장하지 않은 변경이 있습니다. 번역하면 현재 내용이 교체됩니다. 계속하시겠습니까?",
+    "continue": "계속"
+  },
+  "statusBar": {
+    "line": "Ln",
+    "column": "Col"
+  },
+  "translation": {
+    "button": "번역",
+    "translating": "번역 중...",
+    "cancel": "취소",
+    "setupTitle": "Ollama 설정",
+    "notRunning": "Ollama가 실행 중이 아닙니다",
+    "installGuide": "번역 기능을 사용하려면 Ollama가 필요합니다",
+    "installWindows": "Windows: winget install Ollama.Ollama 또는 공식 설치파일",
+    "installLinux": "Linux: curl -fsSL https://ollama.com/install.sh | sh",
+    "modelInstall": "설치 후 터미널에서 아래 명령어를 실행하세요",
+    "modelCommand": "ollama pull gemma3:4b",
+    "modelNotFound": "gemma3:4b 모델이 설치되지 않았습니다",
+    "testConnection": "연결 테스트",
+    "connected": "연결됨",
+    "disconnected": "미연결",
+    "selectModel": "모델 선택",
+    "error": "번역 중 오류가 발생했습니다",
+    "officialDocs": "공식 문서"
+  },
+  "language": {
+    "ko": "한국어",
+    "en": "English"
+  }
+}
