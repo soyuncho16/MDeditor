@@ -1,10 +1,11 @@
 import { useTranslation } from "react-i18next";
 import { useEditorStore } from "../../stores/editorStore";
+import { TranslateButton } from "../translation/TranslateButton";
 import styles from "./AppLayout.module.css";
 
 export function TitleBar() {
   const { t, i18n } = useTranslation();
-  const { activeFilePath, isDirty } = useEditorStore();
+  const { activeFilePath, isDirty, isTranslating } = useEditorStore();
 
   const fileName = activeFilePath
     ? activeFilePath.split(/[/\\]/).pop()
@@ -20,8 +21,14 @@ export function TitleBar() {
         {t("app.title")}
         {fileName && ` — ${fileName}`}
         {isDirty && <span className={styles.dirtyIndicator}> ●</span>}
+        {isTranslating && (
+          <span style={{ marginLeft: 8, fontSize: 12, color: "#666" }}>
+            {t("translation.translating")}
+          </span>
+        )}
       </span>
       <div className={styles.titleActions}>
+        <TranslateButton />
         <button
           className={styles.langButton}
           onClick={toggleLanguage}
