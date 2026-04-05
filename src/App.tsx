@@ -1,10 +1,13 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
+import { listen } from "@tauri-apps/api/event";
+import { invoke } from "@tauri-apps/api/core";
 import { AppLayout } from "./components/layout/AppLayout";
 import { FileTree } from "./components/sidebar/FileTree";
 import { MarkdownEditor } from "./components/editor/MarkdownEditor";
 import { MarkdownPreview } from "./components/preview/MarkdownPreview";
 import { useFileSystem } from "./hooks/useFileSystem";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
+import { useEditorStore } from "./stores/editorStore";
 import "./App.css";
 
 function App() {
@@ -29,6 +32,23 @@ function App() {
     onOpenFolder: openFolder,
     onTranslate: handleTranslate,
   });
+
+  useEffect(() => {
+    const unlisten = listen<string>("open-file", async (event) => {
+      const filePath = event.payload;
+      if (filePath) {
+        try {
+          const fileContent = await invoke<string>("read_file", { path: filePath });
+          useEditorStore.getState().setActiveFile(filePath, fileContent);
+        } catch (err) {
+          console.error("파일 열기 실패:", err);
+        }
+      }
+    });
+    return () => {
+      unlisten.then((fn) => fn());
+    };
+  }, []);
 
   return (
     <AppLayout

@@ -9,6 +9,15 @@
     "beforeBuildCommand": "npm run build",
     "frontendDist": "../dist"
   },
+  "bundle": {
+    "fileAssociations": [
+      {
+        "ext": ["md", "markdown", "mdown", "mkd", "txt"],
+        "mimeType": "text/markdown",
+        "description": "Markdown Document"
+      }
+    ]
+  },
   "app": {
     "windows": [
       {
