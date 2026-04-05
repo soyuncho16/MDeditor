@@ -81,7 +81,8 @@ EOF
 ```
 
 - PR 본문에 반드시 `Closed #이슈번호`를 기입한다.
-- PR이 머지되면 해당 이슈가 자동으로 닫힌다.
+- PR이 develop에 머지되면 `.github/workflows/close-issues.yml` 워크플로우가 이슈를 자동 종료한다.
+- (참고: GitHub 기본 기능은 기본 브랜치(master)로 머지할 때만 이슈를 자동 종료하므로, develop 머지용 별도 워크플로우를 사용한다.)
 
 ### 5. PR 머지
 
