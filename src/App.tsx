@@ -18,7 +18,10 @@ function App() {
   }, []);
 
   const handleTranslate = useCallback(() => {
-    // Task 12에서 구현
+    const btn = document.querySelector(
+      "[data-translate-button]",
+    ) as HTMLButtonElement;
+    btn?.click();
   }, []);
 
   useKeyboardShortcuts({
