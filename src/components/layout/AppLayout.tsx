@@ -10,6 +10,7 @@ interface AppLayoutProps {
   preview: React.ReactNode;
   cursorLine?: number;
   cursorCol?: number;
+  onPreviewPane?: (el: HTMLDivElement | null) => void;
 }
 
 export function AppLayout({
@@ -18,6 +19,7 @@ export function AppLayout({
   preview,
   cursorLine = 1,
   cursorCol = 1,
+  onPreviewPane,
 }: AppLayoutProps) {
   const {
     sidebarVisible,
@@ -112,7 +114,7 @@ export function AppLayout({
               className={styles.resizer}
               onMouseDown={handleEditorDrag}
             />
-            <div className={styles.previewPane}>{preview}</div>
+            <div className={styles.previewPane} ref={onPreviewPane}>{preview}</div>
           </>
         )}
       </div>
