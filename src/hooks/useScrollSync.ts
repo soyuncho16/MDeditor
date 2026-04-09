@@ -6,6 +6,11 @@ interface ScrollSyncOptions {
   previewEl: HTMLElement | null;
 }
 
+/** 스크롤 컨테이너 내 요소의 절대 오프셋을 구한다 (scrollTop 보정 포함) */
+function topInContainer(el: HTMLElement, container: HTMLElement): number {
+  return el.getBoundingClientRect().top - container.getBoundingClientRect().top + container.scrollTop;
+}
+
 export function useScrollSync({ editorView, previewEl }: ScrollSyncOptions) {
   const scrollSourceRef = useRef<"editor" | "preview" | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout>>();
@@ -22,36 +27,16 @@ export function useScrollSync({ editorView, previewEl }: ScrollSyncOptions) {
 
     const editorScroller = editorView.scrollDOM;
 
-    function findPreviewElementForLine(line: number): HTMLElement | null {
-      const elements = previewEl!.querySelectorAll<HTMLElement>("[data-source-line]");
-      let best: HTMLElement | null = null;
-      let bestLine = -1;
-
-      for (const el of elements) {
-        const elLine = parseInt(el.dataset.sourceLine ?? "", 10);
-        if (isNaN(elLine)) continue;
-        if (elLine <= line && elLine > bestLine) {
-          bestLine = elLine;
-          best = el;
-        }
+    /** data-source-line 요소를 정렬된 배열로 캐시 (HTML 변경 시 갱신) */
+    function collectSourceElements() {
+      const nodeList = previewEl!.querySelectorAll<HTMLElement>("[data-source-line]");
+      const result: { el: HTMLElement; line: number }[] = [];
+      for (const el of nodeList) {
+        const line = parseInt(el.dataset.sourceLine ?? "", 10);
+        if (!isNaN(line)) result.push({ el, line });
       }
-      return best;
-    }
-
-    function findNextPreviewElement(line: number): { el: HTMLElement; line: number } | null {
-      const elements = previewEl!.querySelectorAll<HTMLElement>("[data-source-line]");
-      let best: HTMLElement | null = null;
-      let bestLine = Infinity;
-
-      for (const el of elements) {
-        const elLine = parseInt(el.dataset.sourceLine ?? "", 10);
-        if (isNaN(elLine)) continue;
-        if (elLine > line && elLine < bestLine) {
-          bestLine = elLine;
-          best = el;
-        }
-      }
-      return best ? { el: best, line: bestLine } : null;
+      result.sort((a, b) => a.line - b.line);
+      return result;
     }
 
     function handleEditorScroll() {
@@ -61,7 +46,7 @@ export function useScrollSync({ editorView, previewEl }: ScrollSyncOptions) {
       const scrollTop = editorScroller.scrollTop;
       const scrollHeight = editorScroller.scrollHeight - editorScroller.clientHeight;
 
-      if (scrollHeight <= 0) return;
+      if (scrollHeight <= 0) { clearScrollSource(); return; }
 
       // Edge: top
       if (scrollTop <= 0) {
@@ -69,7 +54,6 @@ export function useScrollSync({ editorView, previewEl }: ScrollSyncOptions) {
         clearScrollSource();
         return;
       }
-
       // Edge: bottom
       if (scrollTop >= scrollHeight - 1) {
         previewEl!.scrollTop = previewEl!.scrollHeight - previewEl!.clientHeight;
@@ -77,31 +61,42 @@ export function useScrollSync({ editorView, previewEl }: ScrollSyncOptions) {
         return;
       }
 
-      // Find the top visible line in editor
+      // 에디터 화면 상단의 라인 번호
       const topBlock = editorView!.lineBlockAtHeight(scrollTop);
       const topLine = editorView!.state.doc.lineAt(topBlock.from).number;
 
-      const currentEl = findPreviewElementForLine(topLine);
-      const nextInfo = findNextPreviewElement(topLine);
-
-      if (!currentEl) {
-        // Fallback: ratio-based sync
-        const ratio = scrollTop / scrollHeight;
-        previewEl!.scrollTop = ratio * (previewEl!.scrollHeight - previewEl!.clientHeight);
+      const elements = collectSourceElements();
+      if (elements.length === 0) {
+        // fallback: 비율 동기화
+        previewEl!.scrollTop = (scrollTop / scrollHeight) * (previewEl!.scrollHeight - previewEl!.clientHeight);
         clearScrollSource();
         return;
       }
 
-      const currentElTop = currentEl.offsetTop - previewEl!.offsetTop;
+      // topLine 이하인 가장 가까운 요소와 다음 요소를 찾는다
+      let curIdx = -1;
+      for (let i = elements.length - 1; i >= 0; i--) {
+        if (elements[i].line <= topLine) { curIdx = i; break; }
+      }
 
-      if (nextInfo) {
-        const currentLine = parseInt(currentEl.dataset.sourceLine ?? "1", 10);
-        const nextElTop = nextInfo.el.offsetTop - previewEl!.offsetTop;
-        const lineFraction = (topLine - currentLine) / (nextInfo.line - currentLine);
-        const targetTop = currentElTop + (nextElTop - currentElTop) * Math.max(0, Math.min(1, lineFraction));
-        previewEl!.scrollTop = targetTop;
+      if (curIdx === -1) {
+        // 첫 요소보다 위에 있음
+        previewEl!.scrollTop = 0;
+        clearScrollSource();
+        return;
+      }
+
+      const cur = elements[curIdx];
+      const curTop = topInContainer(cur.el, previewEl!);
+
+      if (curIdx + 1 < elements.length) {
+        const next = elements[curIdx + 1];
+        const nextTop = topInContainer(next.el, previewEl!);
+        const lineRange = next.line - cur.line;
+        const fraction = lineRange > 0 ? (topLine - cur.line) / lineRange : 0;
+        previewEl!.scrollTop = curTop + (nextTop - curTop) * Math.max(0, Math.min(1, fraction));
       } else {
-        previewEl!.scrollTop = currentElTop;
+        previewEl!.scrollTop = curTop;
       }
 
       clearScrollSource();
@@ -114,7 +109,7 @@ export function useScrollSync({ editorView, previewEl }: ScrollSyncOptions) {
       const scrollTop = previewEl!.scrollTop;
       const scrollHeight = previewEl!.scrollHeight - previewEl!.clientHeight;
 
-      if (scrollHeight <= 0) return;
+      if (scrollHeight <= 0) { clearScrollSource(); return; }
 
       // Edge: top
       if (scrollTop <= 0) {
@@ -122,7 +117,6 @@ export function useScrollSync({ editorView, previewEl }: ScrollSyncOptions) {
         clearScrollSource();
         return;
       }
-
       // Edge: bottom
       if (scrollTop >= scrollHeight - 1) {
         editorScroller.scrollTop = editorScroller.scrollHeight - editorScroller.clientHeight;
@@ -130,48 +124,41 @@ export function useScrollSync({ editorView, previewEl }: ScrollSyncOptions) {
         return;
       }
 
-      // Find the element at the top of the preview viewport
-      const elements = previewEl!.querySelectorAll<HTMLElement>("[data-source-line]");
-      let currentEl: HTMLElement | null = null;
-      let nextEl: HTMLElement | null = null;
-
-      for (let i = 0; i < elements.length; i++) {
-        const elTop = elements[i].offsetTop - previewEl!.offsetTop;
-        if (elTop <= scrollTop + 5) {
-          currentEl = elements[i];
-          nextEl = elements[i + 1] ?? null;
-        } else {
-          if (!currentEl) {
-            currentEl = elements[i];
-            nextEl = elements[i + 1] ?? null;
-          }
-          break;
-        }
-      }
-
-      if (!currentEl) {
-        // Fallback: ratio-based sync
-        const ratio = scrollTop / scrollHeight;
-        editorScroller.scrollTop = ratio * (editorScroller.scrollHeight - editorScroller.clientHeight);
+      const elements = collectSourceElements();
+      if (elements.length === 0) {
+        editorScroller.scrollTop = (scrollTop / scrollHeight) * (editorScroller.scrollHeight - editorScroller.clientHeight);
         clearScrollSource();
         return;
       }
 
-      const currentLine = parseInt(currentEl.dataset.sourceLine ?? "1", 10);
+      // 프리뷰 스크롤 위치에 해당하는 요소를 찾는다
+      let curIdx = -1;
+      for (let i = elements.length - 1; i >= 0; i--) {
+        const elTop = topInContainer(elements[i].el, previewEl!);
+        if (elTop <= scrollTop + 5) { curIdx = i; break; }
+      }
 
-      let targetLine = currentLine;
-      if (nextEl) {
-        const nextLine = parseInt(nextEl.dataset.sourceLine ?? "1", 10);
-        const currentElTop = currentEl.offsetTop - previewEl!.offsetTop;
-        const nextElTop = nextEl.offsetTop - previewEl!.offsetTop;
-        const elRange = nextElTop - currentElTop;
+      if (curIdx === -1) {
+        editorScroller.scrollTop = 0;
+        clearScrollSource();
+        return;
+      }
+
+      const cur = elements[curIdx];
+      const curTop = topInContainer(cur.el, previewEl!);
+      let targetLine = cur.line;
+
+      if (curIdx + 1 < elements.length) {
+        const next = elements[curIdx + 1];
+        const nextTop = topInContainer(next.el, previewEl!);
+        const elRange = nextTop - curTop;
         if (elRange > 0) {
-          const fraction = (scrollTop - currentElTop) / elRange;
-          targetLine = currentLine + (nextLine - currentLine) * Math.max(0, Math.min(1, fraction));
+          const fraction = (scrollTop - curTop) / elRange;
+          targetLine = cur.line + (next.line - cur.line) * Math.max(0, Math.min(1, fraction));
         }
       }
 
-      // Scroll editor to the target line
+      // 에디터를 해당 라인으로 스크롤
       const lineNum = Math.max(1, Math.min(Math.round(targetLine), editorView!.state.doc.lines));
       const lineInfo = editorView!.state.doc.line(lineNum);
       const lineBlock = editorView!.lineBlockAt(lineInfo.from);
