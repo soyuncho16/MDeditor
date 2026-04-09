@@ -53,6 +53,10 @@ export function MarkdownEditor({ onCursorChange, onEditorView }: MarkdownEditorP
         keymap.of([...defaultKeymap, ...historyKeymap, ...searchKeymap]),
         updateListener,
         EditorView.lineWrapping,
+        EditorView.theme({
+          "&": { height: "100%" },
+          ".cm-scroller": { overflow: "auto" },
+        }),
       ],
     });
 
