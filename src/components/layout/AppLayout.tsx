@@ -10,6 +10,7 @@ interface AppLayoutProps {
   preview: React.ReactNode;
   cursorLine?: number;
   cursorCol?: number;
+  onPreviewPane?: (el: HTMLDivElement | null) => void;
 }
 
 export function AppLayout({
@@ -18,9 +19,16 @@ export function AppLayout({
   preview,
   cursorLine = 1,
   cursorCol = 1,
+  onPreviewPane,
 }: AppLayoutProps) {
-  const { sidebarVisible, sidebarWidth, previewVisible, setSidebarWidth } =
-    useEditorStore();
+  const {
+    sidebarVisible,
+    sidebarWidth,
+    previewVisible,
+    editorPaneRatio,
+    setSidebarWidth,
+    setEditorPaneRatio,
+  } = useEditorStore();
   const containerRef = useRef<HTMLDivElement>(null);
   const isDraggingRef = useRef(false);
 
@@ -52,6 +60,33 @@ export function AppLayout({
     [setSidebarWidth],
   );
 
+  const handleEditorDrag = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      isDraggingRef.current = true;
+
+      const onMouseMove = (moveEvent: MouseEvent) => {
+        if (!isDraggingRef.current || !containerRef.current) return;
+        const containerRect = containerRef.current.getBoundingClientRect();
+        const sidebarOffset = sidebarVisible ? sidebarWidth + 4 : 0;
+        const availableWidth = containerRect.width - sidebarOffset;
+        const mouseOffset = moveEvent.clientX - containerRect.left - sidebarOffset;
+        const ratio = Math.max(0.2, Math.min(0.8, mouseOffset / availableWidth));
+        setEditorPaneRatio(ratio);
+      };
+
+      const onMouseUp = () => {
+        isDraggingRef.current = false;
+        document.removeEventListener("mousemove", onMouseMove);
+        document.removeEventListener("mouseup", onMouseUp);
+      };
+
+      document.addEventListener("mousemove", onMouseMove);
+      document.addEventListener("mouseup", onMouseUp);
+    },
+    [sidebarVisible, sidebarWidth, setEditorPaneRatio],
+  );
+
   return (
     <div className={styles.container}>
       <TitleBar />
@@ -67,11 +102,19 @@ export function AppLayout({
             />
           </>
         )}
-        <div className={styles.editorPane}>{editor}</div>
+        <div
+          className={styles.editorPane}
+          style={previewVisible ? { flex: `0 0 ${editorPaneRatio * 100}%` } : undefined}
+        >
+          {editor}
+        </div>
         {previewVisible && (
           <>
-            <div className={styles.resizer} />
-            <div className={styles.previewPane}>{preview}</div>
+            <div
+              className={styles.resizer}
+              onMouseDown={handleEditorDrag}
+            />
+            <div className={styles.previewPane} ref={onPreviewPane}>{preview}</div>
           </>
         )}
       </div>

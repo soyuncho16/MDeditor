@@ -4,14 +4,15 @@ import { renderMarkdown } from "../markdown";
 describe("renderMarkdown", () => {
   it("기본 마크다운을 HTML로 변환한다", async () => {
     const html = await renderMarkdown("# Hello World");
-    expect(html).toContain("<h1>Hello World</h1>");
+    expect(html).toContain("Hello World</h1>");
+    expect(html).toContain("data-source-line=");
   });
 
   it("GFM 테이블을 렌더링한다", async () => {
     const md = `| A | B |\n|---|---|\n| 1 | 2 |`;
     const html = await renderMarkdown(md);
-    expect(html).toContain("<table>");
-    expect(html).toContain("<td>1</td>");
+    expect(html).toContain("<table");
+    expect(html).toContain(">1</td>");
   });
 
   it("GFM 체크박스를 렌더링한다", async () => {
@@ -23,7 +24,7 @@ describe("renderMarkdown", () => {
   it("GFM 취소선을 렌더링한다", async () => {
     const md = `~~deleted~~`;
     const html = await renderMarkdown(md);
-    expect(html).toContain("<del>deleted</del>");
+    expect(html).toContain(">deleted</del>");
   });
 
   it("인라인 수식을 렌더링한다", async () => {

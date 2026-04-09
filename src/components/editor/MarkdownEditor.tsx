@@ -11,9 +11,10 @@ import styles from "./MarkdownEditor.module.css";
 
 interface MarkdownEditorProps {
   onCursorChange?: (line: number, col: number) => void;
+  onEditorView?: (view: EditorView | null) => void;
 }
 
-export function MarkdownEditor({ onCursorChange }: MarkdownEditorProps) {
+export function MarkdownEditor({ onCursorChange, onEditorView }: MarkdownEditorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const { content, activeFilePath, setContent } = useEditorStore();
@@ -22,6 +23,9 @@ export function MarkdownEditor({ onCursorChange }: MarkdownEditorProps) {
 
   const onCursorChangeRef = useRef(onCursorChange);
   onCursorChangeRef.current = onCursorChange;
+
+  const onEditorViewRef = useRef(onEditorView);
+  onEditorViewRef.current = onEditorView;
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -49,6 +53,10 @@ export function MarkdownEditor({ onCursorChange }: MarkdownEditorProps) {
         keymap.of([...defaultKeymap, ...historyKeymap, ...searchKeymap]),
         updateListener,
         EditorView.lineWrapping,
+        EditorView.theme({
+          "&": { height: "100%" },
+          ".cm-scroller": { overflow: "auto" },
+        }),
       ],
     });
 
@@ -58,8 +66,10 @@ export function MarkdownEditor({ onCursorChange }: MarkdownEditorProps) {
     });
 
     viewRef.current = view;
+    onEditorViewRef.current?.(view);
 
     return () => {
+      onEditorViewRef.current?.(null);
       view.destroy();
     };
   }, [activeFilePath]); // activeFilePath 변경 시 에디터 재생성
