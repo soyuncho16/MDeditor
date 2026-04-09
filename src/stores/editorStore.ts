@@ -10,6 +10,7 @@ interface EditorState {
   sidebarVisible: boolean;
   sidebarWidth: number;
   previewVisible: boolean;
+  editorPaneRatio: number;
   isTranslating: boolean;
 
   setRootPath: (path: string, tree: FileEntry[]) => void;
@@ -20,6 +21,7 @@ interface EditorState {
   toggleSidebar: () => void;
   togglePreview: () => void;
   setSidebarWidth: (width: number) => void;
+  setEditorPaneRatio: (ratio: number) => void;
   setIsTranslating: (value: boolean) => void;
 }
 
@@ -32,6 +34,7 @@ export const useEditorStore = create<EditorState>()((set) => ({
   sidebarVisible: true,
   sidebarWidth: 250,
   previewVisible: true,
+  editorPaneRatio: 0.5,
   isTranslating: false,
 
   setRootPath: (path, tree) => set({ rootPath: path, fileTree: tree }),
@@ -43,5 +46,6 @@ export const useEditorStore = create<EditorState>()((set) => ({
   toggleSidebar: () => set((s) => ({ sidebarVisible: !s.sidebarVisible })),
   togglePreview: () => set((s) => ({ previewVisible: !s.previewVisible })),
   setSidebarWidth: (width) => set({ sidebarWidth: width }),
+  setEditorPaneRatio: (ratio) => set({ editorPaneRatio: ratio }),
   setIsTranslating: (value) => set({ isTranslating: value }),
 }));
