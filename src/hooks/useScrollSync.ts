@@ -78,9 +78,8 @@ export function useScrollSync({ editorView, previewEl }: ScrollSyncOptions) {
       }
 
       // Find the top visible line in editor
-      const topPos = editorView!.posAtCoords({ x: 0, y: editorView!.documentTop })
-        ?? editorView!.viewport.from;
-      const topLine = editorView!.state.doc.lineAt(topPos).number;
+      const topBlock = editorView!.lineBlockAtHeight(scrollTop);
+      const topLine = editorView!.state.doc.lineAt(topBlock.from).number;
 
       const currentEl = findPreviewElementForLine(topLine);
       const nextInfo = findNextPreviewElement(topLine);
@@ -173,14 +172,10 @@ export function useScrollSync({ editorView, previewEl }: ScrollSyncOptions) {
       }
 
       // Scroll editor to the target line
-      const lineInfo = editorView!.state.doc.line(
-        Math.max(1, Math.min(Math.round(targetLine), editorView!.state.doc.lines)),
-      );
-      const coords = editorView!.coordsAtPos(lineInfo.from);
-      if (coords) {
-        const editorTop = editorView!.documentTop;
-        editorScroller.scrollTop = coords.top - editorTop;
-      }
+      const lineNum = Math.max(1, Math.min(Math.round(targetLine), editorView!.state.doc.lines));
+      const lineInfo = editorView!.state.doc.line(lineNum);
+      const lineBlock = editorView!.lineBlockAt(lineInfo.from);
+      editorScroller.scrollTop = lineBlock.top;
 
       clearScrollSource();
     }
